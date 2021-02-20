@@ -14,7 +14,7 @@ private:
 };
 
 Game::Game()
-	: mWindow(sf::VideoMode(640, 480), "farba")
+	: mWindow(sf::VideoMode(640, 480), "farba"), mStateStack(&mWindow)
 {
 	mStateStack.pushbackState(State::MainMenu);
 }
@@ -44,6 +44,7 @@ void Game::run()
 
 int main()
 {
+	srand(time(nullptr));
 	Game game;
 	game.run();
 }

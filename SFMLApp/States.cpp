@@ -36,7 +36,14 @@ void MainMenu::handleEvent(sf::Event& event)
 	}
 	if (event.type == sf::Event::KeyPressed)
 	{
-		mStateStack->pushbackState(State::GameState);
+		if (event.key.code == sf::Keyboard::Num1)
+		{
+			mStateStack->pushbackState(State::GameState);
+		}
+		else if (event.key.code == sf::Keyboard::Num2)
+		{
+			mStateStack->pushbackState(State::Gusjenica);
+		}
 	}
 }
 
@@ -51,7 +58,6 @@ void GameState::draw(sf::RenderWindow& window)
 GameState::GameState(StateStack* stateStack) :
 	State(false, false, stateStack)
 {
-	srand(time(nullptr));
 	mCircleGoal = sf::CircleShape(100.0f, 300);
 	mCircleCurrent = sf::CircleShape(100.0f, 300);
 
@@ -171,9 +177,178 @@ void GameState::handleEvent(sf::Event& event)
 {
 	if (event.type == sf::Event::KeyPressed)
 	{
+		if (event.key.code == sf::Keyboard::Escape)
+		{
+			mStateStack->popState();
+		}
 		if (event.key.code == sf::Keyboard::Space)
 		{
 			guessColor();
 		}
 	}
+}
+
+void GusjenicaState::update(float dt)
+{
+
+}
+
+void GusjenicaState::handleEvent(sf::Event& event)
+{
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::Escape)
+		{
+			mStateStack->popState();
+		}
+	}
+	else if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (event.mouseButton.button == sf::Mouse::Left)
+		{
+			auto coords = sf::Mouse::getPosition(*mStateStack->mWindow);
+			int index = (coords.x - (320 - mDifficulty / 2.0f * 50)) / 50.0f;
+			bool inside = (coords.y > 430.0f) && (coords.y < 480.0f);
+
+			if (index >= 0 && index < mDifficulty && inside)
+			{
+				pickColor(mPallete[index].getFillColor());
+			}
+		}
+	}
+}
+
+void GusjenicaState::colorSegments()
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		sf::Color color = sf::Color(rand() % 255, rand() % 255, rand() % 255);
+		mColored[i].color(color);
+	}
+}
+
+void GusjenicaState::setPallete(const sf::Color& color)
+{
+	mPallete.clear();
+	for (int i = 0; i < mDifficulty; ++i)
+	{
+		mPallete.push_back(sf::RectangleShape(sf::Vector2f(50, 50)));
+		mPallete.back().setPosition(320 - mDifficulty / 2.0f * 50 + 50 * i, 430);
+		mPallete.back().setFillColor(sf::Color(rand() % 255, rand() % 255, rand() % 255));
+	}
+	mPallete[rand() % mDifficulty].setFillColor(color);
+}
+
+GusjenicaState::GusjenicaState(StateStack* stateStack)
+	: State(false, false, stateStack) {
+	for (int i = 0; i < 6; ++i)
+	{
+		mUncolored.push_back(Segment(Segment::SegmentType(i)));
+		mUncolored.back().addToPosition(sf::Vector2f(50, 200));
+	}
+	for (int i = 0; i < 6; ++i)
+	{
+		mColored.push_back(Segment(Segment::SegmentType(i)));
+		mColored.back().addToPosition(sf::Vector2f(50, 0));
+	}
+	mSmiley.setTexture(TextureCache::get()->getTexture(TextureCache::Smiley));
+	mSadFace.setTexture(TextureCache::get()->getTexture(TextureCache::Sad));
+	mSmiley.setColor(sf::Color(0, 0, 0, 0));
+	mSadFace.setColor(sf::Color(0, 0, 0, 0));
+	mSmiley.setScale(0.2f, 0.2f);
+	mSadFace.setScale(0.2f, 0.2f);
+	mSmiley.setPosition(260, 300);
+	mSadFace.setPosition(260, 300);
+	colorSegments();
+	setPallete(mColored[mCurrentSegment].getColor());
+}
+
+void GusjenicaState::pickColor(const sf::Color& color)
+{
+	if (mColored[mCurrentSegment].getColor() == color)
+	{
+		mUncolored[mCurrentSegment++].color(color);
+		++mDifficulty;
+		if (mCurrentSegment == 6)
+		{
+			mSmiley.setColor(sf::Color(255, 255, 255, 255));
+			mPallete.clear();
+			gameOver = true;
+		}
+		else
+		{
+			setPallete(mColored[mCurrentSegment].getColor());
+			gameOver = true;
+		}
+	}
+	else
+	{
+		mPallete.clear();
+		mSadFace.setColor(sf::Color(255, 255, 255, 255));
+	}
+}
+
+void GusjenicaState::draw(sf::RenderWindow& window)
+{
+	for (auto& segment : mUncolored)
+	{
+		segment.draw(window);
+	}
+	for (auto& segment : mColored)
+	{
+		segment.draw(window);
+	}
+	for (auto& pallete : mPallete)
+	{
+		window.draw(pallete);
+	}
+	window.draw(mSmiley);
+	window.draw(mSadFace);
+}
+
+void Segment::draw(sf::RenderWindow& window)
+{
+	window.draw(mSegmentSprite);
+}
+
+Segment::Segment(SegmentType type)
+{
+	switch (type)
+	{
+	case First:
+		mSegmentSprite.setTexture(TextureCache::get()->getTexture(TextureCache::Seg1));
+		mSegmentSprite.setPosition(50, 50);
+		break;
+	case Second:
+		mSegmentSprite.setTexture(TextureCache::get()->getTexture(TextureCache::Seg2));
+		mSegmentSprite.setPosition(100, 50);
+		break;
+	case Third:
+		mSegmentSprite.setTexture(TextureCache::get()->getTexture(TextureCache::Seg3));
+		mSegmentSprite.setPosition(160, 50);
+		break;
+	case Fourth:
+		mSegmentSprite.setTexture(TextureCache::get()->getTexture(TextureCache::Seg4));
+		mSegmentSprite.setPosition(215, 50);
+		break;
+	case Fifth:
+		mSegmentSprite.setTexture(TextureCache::get()->getTexture(TextureCache::Seg5));
+		mSegmentSprite.setPosition(270, 36);
+		break;
+	case Sixth:
+		mSegmentSprite.setTexture(TextureCache::get()->getTexture(TextureCache::Seg6));
+		mSegmentSprite.setPosition(335, -20);
+		break;
+
+	}
+}
+
+void Segment::addToPosition(const sf::Vector2f& position)
+{
+	mSegmentSprite.setPosition(mSegmentSprite.getPosition() + position);
+}
+
+void Segment::color(const sf::Color& color)
+{
+	mSegmentSprite.setColor(color);
 }

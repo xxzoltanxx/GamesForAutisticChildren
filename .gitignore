@@ -64,3 +64,14 @@ SFMLApp/x64/Release/SFMLApp.tlog/unsuccessfulbuild
 SFMLApp/x64/Release/vc142.pdb
 x64/Debug/SFMLApp.ilk
 x64/Debug/SFMLApp.pdb
+*.pdb
+SFMLApp/x64/Debug/vc142.pdb
+.vs/SFMLApp/v16/ipch/AutoPCH/3cc1ca583f31523a/GAME.ipch
+.vs/SFMLApp/v16/Browse.VC.opendb
+.vs/SFMLApp/v16/Browse.VC.db-wal
+.vs/SFMLApp/v16/Browse.VC.db-shm
+.vs/SFMLApp/v16/Browse.VC.db
+.vs/SFMLApp/v16/.suo
+SFMLApp/x64/Debug/vc142.pdb
+*.pdb
+SFMLApp/x64/Debug/vc142.pdb

@@ -21,7 +21,8 @@ public:
 	enum States
 	{
 		MainMenu,
-		GameState
+		GameState,
+		Gusjenica
 	};
 
 	bool isTranslucent() const
@@ -41,6 +42,57 @@ protected:
 	bool mIsTranslucent;
 	bool mIsTranscendent;
 	StateStack* mStateStack;
+};
+
+class Segment
+{
+public:
+	enum SegmentType
+	{
+		First = 0,
+		Second,
+		Third,
+		Fourth,
+		Fifth,
+		Sixth,
+	};
+	Segment(SegmentType type);
+
+	void draw(sf::RenderWindow& window);
+	void addToPosition(const sf::Vector2f& position);
+	void color(const sf::Color& color);
+
+	const sf::Color& getColor() const { return mSegmentSprite.getColor(); }
+private:
+	sf::Sprite mSegmentSprite;
+};
+
+class GusjenicaState : public State
+{
+public:
+	GusjenicaState(StateStack* stateStack);
+	void handleEvent(sf::Event& event) override;
+	void update(float dt) override;
+	void draw(sf::RenderWindow& window) override;
+private:
+
+	void colorSegments();
+	void setPallete(const sf::Color& color);
+
+	void pickColor(const sf::Color& color);
+
+	std::vector<Segment> mUncolored;
+	std::vector<Segment> mColored;
+
+	std::vector<sf::RectangleShape> mPallete;
+
+	int mCurrentSegment = 0;
+	int mDifficulty = 2;
+
+	sf::Sprite mSmiley;
+	sf::Sprite mSadFace;
+
+	bool gameOver = false;
 };
 
 class MainMenu : public State

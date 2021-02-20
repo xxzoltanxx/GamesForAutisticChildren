@@ -6,9 +6,13 @@ void StateStack::pushbackState(State::States state)
 	{
 		mCommand = Command::PushMain;
 	}
-	else
+	else if (state == State::GameState)
 	{
 		mCommand = Command::PushGame;
+	}
+	else
+	{
+		mCommand = Command::PushGusjenica;
 	}
 }
 
@@ -17,10 +21,12 @@ void StateStack::popState()
 	mCommand = Command::Pop;
 }
 
-StateStack::StateStack()
+StateStack::StateStack(sf::RenderWindow* window)
 {
+	mWindow = window;
 	registerState<GameState>(State::GameState);
 	registerState<MainMenu>(State::MainMenu);
+	registerState<GusjenicaState>(State::Gusjenica);
 }
 
 void StateStack::render(sf::RenderWindow& window)
@@ -55,6 +61,10 @@ void StateStack::update(float dt)
 	{
 		mStates.push_back(std::move(mStateFactory[State::MainMenu](this)));
 	}
+	else if (mCommand == Command::PushGusjenica)
+	{
+		mStates.push_back(std::move(mStateFactory[State::Gusjenica](this)));
+	}
 	else if (mCommand == Command::Pop)
 	{
 		mStates.pop_back();
@@ -84,9 +94,21 @@ TextureCache::TextureCache()
 {
 	mTextures.insert(std::make_pair(Textures::Smiley, std::unique_ptr<sf::Texture>(new sf::Texture())));
 	mTextures.insert(std::make_pair(Textures::Sad, std::unique_ptr<sf::Texture>(new sf::Texture())));
+	mTextures.insert(std::make_pair(Textures::Seg1, std::unique_ptr<sf::Texture>(new sf::Texture())));
+	mTextures.insert(std::make_pair(Textures::Seg2, std::unique_ptr<sf::Texture>(new sf::Texture())));
+	mTextures.insert(std::make_pair(Textures::Seg3, std::unique_ptr<sf::Texture>(new sf::Texture())));
+	mTextures.insert(std::make_pair(Textures::Seg4, std::unique_ptr<sf::Texture>(new sf::Texture())));
+	mTextures.insert(std::make_pair(Textures::Seg5, std::unique_ptr<sf::Texture>(new sf::Texture())));
+	mTextures.insert(std::make_pair(Textures::Seg6, std::unique_ptr<sf::Texture>(new sf::Texture())));
 
 	mTextures[Textures::Smiley]->loadFromFile("smiley.png", sf::IntRect(0, 0, 410, 420));
 	mTextures[Textures::Sad]->loadFromFile("smiley.png", sf::IntRect(410, 0, 410, 420));
+	mTextures[Textures::Seg1]->loadFromFile("6.png");
+	mTextures[Textures::Seg2]->loadFromFile("5.png");
+	mTextures[Textures::Seg3]->loadFromFile("4.png");
+	mTextures[Textures::Seg4]->loadFromFile("3.png");
+	mTextures[Textures::Seg5]->loadFromFile("2.png");
+	mTextures[Textures::Seg6]->loadFromFile("1.png");
 }
 
 TextureCache* TextureCache::sInstance = nullptr;

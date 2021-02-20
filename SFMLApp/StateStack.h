@@ -10,13 +10,14 @@ enum class Command
 	None,
 	PushGame,
 	PushMain,
-	Pop
+	Pop,
+	PushGusjenica
 };
 
 class StateStack
 {
 public:
-	StateStack();
+	StateStack(sf::RenderWindow* win);
 
 	bool isEmpty() const
 	{
@@ -29,6 +30,8 @@ public:
 	void update(float dt);
 	void render(sf::RenderWindow& window);
 	bool noCommand() const { return mCommand == Command::None;  }
+
+	sf::RenderWindow* mWindow;
 private:
 
 	template <typename T> void registerState(State::States state)
@@ -37,6 +40,7 @@ private:
 	}
 
 	std::vector<std::unique_ptr<State>> mStates;
+
 	std::unordered_map<State::States, std::function<std::unique_ptr<State>(StateStack* stateStack)>> mStateFactory;
 	Command mCommand = Command::None;
 	
@@ -48,7 +52,13 @@ public:
 	enum Textures
 	{
 		Smiley,
-		Sad
+		Sad,
+		Seg1,
+		Seg2,
+		Seg3,
+		Seg4,
+		Seg5,
+		Seg6
 	};
 	TextureCache();
 	sf::Texture& const getTexture(TextureCache::Textures texture);
