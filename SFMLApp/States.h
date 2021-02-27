@@ -22,7 +22,9 @@ public:
 	{
 		MainMenu,
 		GameState,
-		Gusjenica
+		Gusjenica,
+		SnakeState,
+		Game
 	};
 
 	bool isTranslucent() const
@@ -93,6 +95,58 @@ private:
 	sf::Sprite mSadFace;
 
 	bool gameOver = false;
+};
+
+struct Fruit
+{
+	Fruit(const sf::Vector2i& position)
+	{
+		mPosition = position;
+		mRectangle = sf::RectangleShape(sf::Vector2f(32, 24));
+		mRectangle.setFillColor(sf::Color::Red);
+		mRectangle.setPosition(mPosition.x * 32, mPosition.y * 24);
+	}
+	sf::Vector2i mPosition;
+	sf::RectangleShape mRectangle;
+};
+
+
+struct SnakeSegment
+{
+	enum Direction
+	{
+		Left,
+		Right,
+		Up,
+		Down
+	};
+
+	SnakeSegment(SnakeSegment&&) = delete;
+	SnakeSegment() = delete;
+
+	SnakeSegment(Direction direction, const sf::Vector2i& position);
+	void updatePosition();
+	sf::Vector2i mPosition;
+	Direction mCurrentDirection;
+	sf::RectangleShape mRectangle;
+};
+
+class SnakeState : public State
+{
+public:
+	SnakeState(StateStack* stateStack);
+	void handleEvent(sf::Event& event) override;
+	void update(float dt) override;
+	void draw(sf::RenderWindow& window) override;
+
+	void gameOver();
+private:
+	Fruit mFruit;
+	sf::Time mElapsedTime;
+	std::vector<SnakeSegment*> mSnakeSegments;
+
+	SnakeSegment::Direction mNextDirection;
+	bool mGameOver = false;
 };
 
 class MainMenu : public State

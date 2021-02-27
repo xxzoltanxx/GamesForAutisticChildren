@@ -2,6 +2,9 @@
 #include "StateStack.h"
 #include "Utils.h"
 
+constexpr int gameArea = 20;
+constexpr float snakeFrameTime = 0.5f;
+
 State::State(bool isTranslucent, bool isTranscendent, StateStack* stateStack)
 	:mIsTranslucent(isTranslucent),
 	mIsTranscendent(isTranscendent),
@@ -43,6 +46,10 @@ void MainMenu::handleEvent(sf::Event& event)
 		else if (event.key.code == sf::Keyboard::Num2)
 		{
 			mStateStack->pushbackState(State::Gusjenica);
+		}
+		else if (event.key.code == sf::Keyboard::Num3)
+		{
+			mStateStack->pushbackState(State::SnakeState);
 		}
 	}
 }
@@ -352,3 +359,130 @@ void Segment::color(const sf::Color& color)
 {
 	mSegmentSprite.setColor(color);
 }
+
+void SnakeState::draw(sf::RenderWindow& window)
+{
+	for (SnakeSegment* segment : mSnakeSegments)
+	{
+		window.draw(segment->mRectangle);
+	}
+	window.draw(mFruit.mRectangle);
+}
+
+void SnakeState::gameOver()
+{
+	for (SnakeSegment* segment : mSnakeSegments)
+	{
+		segment->mRectangle.setFillColor(sf::Color::Blue);
+	}
+	mGameOver = true;
+}
+
+void SnakeState::update(float dt)
+{
+	if (mGameOver)
+	{
+		return;
+	}
+
+	mElapsedTime += sf::seconds(dt);
+	if (mElapsedTime > sf::seconds(snakeFrameTime))
+	{
+		mElapsedTime = sf::seconds(0);
+		mSnakeSegments[0]->mCurrentDirection = mNextDirection;
+
+		SnakeSegment::Direction previousDir = mNextDirection;
+		sf::Vector2i previousPosition;
+		for (SnakeSegment* seg : mSnakeSegments)
+		{
+			previousPosition = seg->mPosition;
+			seg->updatePosition();
+			SnakeSegment::Direction temp = seg->mCurrentDirection;
+			seg->mCurrentDirection = previousDir;
+			previousDir = temp;
+		}
+		if (mSnakeSegments[0]->mPosition == mFruit.mPosition)
+		{
+			mSnakeSegments.push_back(new SnakeSegment(previousDir, previousPosition));
+			mFruit = Fruit(sf::Vector2i(rand() % gameArea, rand() % gameArea));
+		}
+		if (mSnakeSegments[0]->mPosition.x < 0 || mSnakeSegments[0]->mPosition.x > gameArea || mSnakeSegments[0]->mPosition.y < 0 || mSnakeSegments[0]->mPosition.y > gameArea)
+		{
+			gameOver();
+			return;
+		}
+		for (int i = 1; i < mSnakeSegments.size(); ++i)
+		{
+			if (mSnakeSegments[0]->mPosition == mSnakeSegments[i]->mPosition)
+			{
+				gameOver();
+			}
+		}
+	}
+}
+
+void SnakeState::handleEvent(sf::Event& event)
+{
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::Escape)
+		{
+			mStateStack->popState();
+		}
+		else if (event.key.code == sf::Keyboard::Up)
+		{
+			mNextDirection = SnakeSegment::Up;
+		}
+		else if (event.key.code == sf::Keyboard::Left)
+		{
+			mNextDirection = SnakeSegment::Left;
+		}
+		else if (event.key.code == sf::Keyboard::Right)
+		{
+			mNextDirection = SnakeSegment::Right;
+		}
+		else if (event.key.code == sf::Keyboard::Down)
+		{
+			mNextDirection = SnakeSegment::Down;
+		}
+
+	}
+}
+
+SnakeState::SnakeState(StateStack* stateStack)
+	:State(false, false, stateStack),
+	mFruit(sf::Vector2i(rand() % gameArea, rand() % gameArea))
+{
+	mSnakeSegments.push_back(new SnakeSegment(SnakeSegment::Up, sf::Vector2i(10, 10)));
+	mFruit = Fruit(sf::Vector2i(rand() % gameArea, rand() % gameArea));
+}
+
+void SnakeSegment::updatePosition()
+{
+	switch (mCurrentDirection)
+	{
+	case SnakeSegment::Left:
+		mPosition.x -= 1;
+		break;
+	case SnakeSegment::Right:
+		mPosition.x += 1;
+		break;
+	case SnakeSegment::Up:
+		mPosition.y -= 1;
+		break;
+	case SnakeSegment::Down:
+		mPosition.y += 1;
+		break;
+	}
+	mRectangle.setPosition(mPosition.x * 32, mPosition.y * 24);
+}
+
+SnakeSegment::SnakeSegment(Direction direction, const sf::Vector2i& position)
+	:mCurrentDirection(direction),
+	mPosition(position),
+	mRectangle(sf::Vector2f(30, 22))
+{
+	mRectangle.setFillColor(sf::Color::Green);
+	mRectangle.setPosition(position.x * 32, position.y * 24);
+}
+
