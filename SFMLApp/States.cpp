@@ -523,14 +523,17 @@ PhysicsWorld::PhysicsWorld(StateStack* stateStack) :
 	State(false, false, stateStack),
 	world(b2Vec2(0, 9.81))
 {
-	addSquare();
+	for (int i = 0; i < 30; ++i)
+	{
+		addSquare();
+	}
 	addGround();
 }
 
 void PhysicsWorld::addSquare()
 {
 	Entity* newEntity = new Entity();
-	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(50, 50), sf::Color::Red, sf::Vector2f(50, 50), newEntity, this);
+	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(rand() % 50 + 10, rand() % 50 + 10), sf::Color::Red, sf::Vector2f(rand() % 600, rand() % 300), newEntity, this);
 	rect->onCreate();
 	BoxCollider* collider = new BoxCollider(&world, rect, 1.0f, 2.0f, newEntity, false);
 	collider->onCreate();
@@ -542,7 +545,7 @@ void PhysicsWorld::addSquare()
 void PhysicsWorld::addGround()
 {
 	Entity* newEntity = new Entity();
-	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(640, 20), sf::Color::Blue, sf::Vector2f(320, 460), newEntity, this);
+	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(640, 20), sf::Color::Blue, sf::Vector2f(320, 470), newEntity, this);
 	rect->onCreate();
 	BoxCollider* collider = new BoxCollider(&world, rect,0.0f, 2.0f, newEntity, true);
 	collider->onCreate();
