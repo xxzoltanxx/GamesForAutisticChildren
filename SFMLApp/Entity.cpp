@@ -82,11 +82,12 @@ BoxCollider::BoxCollider(b2World* world, RenderScript* object, float density, fl
 	Body = world->CreateBody(&BodyDef);
 
 	b2PolygonShape Shape;
-	Shape.SetAsBox(object->getSize().x / SCALE, object->getSize().y / SCALE);
+	Shape.SetAsBox(object->getSize().x / 2.0f / SCALE, object->getSize().y / 2.0f / SCALE);
 	b2FixtureDef FixtureDef;
 	FixtureDef.friction = friction;
 	FixtureDef.density = 1.f;
 	FixtureDef.shape = &Shape;
+
 
 	Body->CreateFixture(&FixtureDef);
 }
@@ -94,7 +95,7 @@ BoxCollider::BoxCollider(b2World* world, RenderScript* object, float density, fl
 void BoxCollider::update(float dt)
 {
 	RenderScript* renderScript = (RenderScript*)mEntity->getComponent<RenderScript>();
-	renderScript->changePosition(sf::Vector2f((Body->GetPosition().x) * SCALE + renderScript->getSize().x / 2.0f, Body->GetPosition().y * SCALE + renderScript->getSize().y / 2.0f));
+	renderScript->changePosition(sf::Vector2f((Body->GetPosition().x) * SCALE, Body->GetPosition().y * SCALE));
 	renderScript->changeRotation(Body->GetAngle() * 180.0f / b2_pi);
 }
 
