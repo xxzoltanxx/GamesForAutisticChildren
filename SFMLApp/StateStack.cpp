@@ -14,6 +14,10 @@ void StateStack::pushbackState(State::States state)
 	{
 		mCommand = Command::PushSnake;
 	}
+	else if (state == State::PhysicsGame)
+	{
+		mCommand = Command::PushPhysics;
+	}
 	else
 	{
 		mCommand = Command::PushGusjenica;
@@ -32,6 +36,7 @@ StateStack::StateStack(sf::RenderWindow* window)
 	registerState<MainMenu>(State::MainMenu);
 	registerState<GusjenicaState>(State::Gusjenica);
 	registerState<SnakeState>(State::SnakeState);
+	registerState<PhysicsWorld>(State::PhysicsGame);
 }
 
 void StateStack::render(sf::RenderWindow& window)
@@ -77,6 +82,10 @@ void StateStack::update(float dt)
 	else if (mCommand == Command::Pop)
 	{
 		mStates.pop_back();
+	}
+	else if (mCommand == Command::PushPhysics)
+	{
+		mStates.push_back(std::move(mStateFactory[State::PhysicsGame](this)));
 	}
 	mCommand = Command::None;
 }

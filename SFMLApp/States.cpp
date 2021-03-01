@@ -1,6 +1,7 @@
 #include "States.h"
 #include "StateStack.h"
 #include "Utils.h"
+#include "Entity.h"
 
 constexpr int gameArea = 20;
 constexpr float snakeFrameTime = 0.5f;
@@ -11,6 +12,34 @@ State::State(bool isTranslucent, bool isTranscendent, StateStack* stateStack)
 	mStateStack(stateStack)
 {
 
+}
+
+void State::addDrawable(RenderScript* renderScript)
+{
+	mDrawables.push_back(renderScript);
+}
+
+void State::removeDrawable(RenderScript* renderScript)
+{
+	auto iter = std::find(mDrawables.begin(), mDrawables.end(), renderScript);
+	mDrawables.erase(iter);
+}
+
+void State::update(float dt)
+{
+	for (auto entity = mEntities.begin(); entity != mEntities.end(); ++entity)
+	{
+		(*entity)->update(dt);
+	}
+}
+
+//The basic states don't even use this
+void State::draw(sf::RenderWindow& window)
+{
+	for (auto iter = mDrawables.begin(); iter != mDrawables.end(); ++iter)
+	{
+		(*iter)->draw(window);
+	}
 }
 
 MainMenu::MainMenu(StateStack* stateStack)
@@ -50,6 +79,10 @@ void MainMenu::handleEvent(sf::Event& event)
 		else if (event.key.code == sf::Keyboard::Num3)
 		{
 			mStateStack->pushbackState(State::SnakeState);
+		}
+		else if (event.key.code == sf::Keyboard::Num4)
+		{
+			mStateStack->pushbackState(State::PhysicsGame);
 		}
 	}
 }
@@ -486,3 +519,34 @@ SnakeSegment::SnakeSegment(Direction direction, const sf::Vector2i& position)
 	mRectangle.setPosition(position.x * 32, position.y * 24);
 }
 
+PhysicsWorld::PhysicsWorld(StateStack* stateStack) :
+	State(false, false, stateStack),
+	world(b2Vec2(0, 9.81))
+{
+	addSquare();
+	addGround();
+}
+
+void PhysicsWorld::addSquare()
+{
+	Entity* newEntity = new Entity();
+	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(50, 50), sf::Color::Red, sf::Vector2f(50, 50), newEntity, this);
+	rect->onCreate();
+	BoxCollider* collider = new BoxCollider(&world, rect, 1.0f, 2.0f, newEntity, false);
+	collider->onCreate();
+	newEntity->addComponent(rect);
+	newEntity->addComponent(collider);
+	mEntities.push_back(newEntity);
+}
+
+void PhysicsWorld::addGround()
+{
+	Entity* newEntity = new Entity();
+	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(640, 20), sf::Color::Blue, sf::Vector2f(320, 460), newEntity, this);
+	rect->onCreate();
+	BoxCollider* collider = new BoxCollider(&world, rect,0.0f, 2.0f, newEntity, true);
+	collider->onCreate();
+	newEntity->addComponent(rect);
+	newEntity->addComponent(collider);
+	mEntities.push_back(newEntity);
+}

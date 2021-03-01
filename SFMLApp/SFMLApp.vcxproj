@@ -156,10 +156,10 @@
     <ClCompile Include="States.cpp" />
     <ClCompile Include="StateStack.cpp" />
     <ClCompile Include="Subscriber.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entity.h" />
-    <ClInclude Include="EntityManager.h" />
     <ClInclude Include="Subcriber.h" />
     <ClInclude Include="States.h" />
     <ClInclude Include="StateStack.h" />

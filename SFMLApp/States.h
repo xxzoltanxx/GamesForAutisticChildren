@@ -1,9 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>;
+#include <box2d.h>;
 #include <algorithm>;
-#include "Entity.h";
 
+class Entity;
 class StateStack;
+class RenderScript;
 
 
 constexpr float guessThreshold = 30.0f;
@@ -26,6 +28,7 @@ public:
 		GameState,
 		Gusjenica,
 		SnakeState,
+		PhysicsGame,
 		Game
 	};
 
@@ -39,28 +42,15 @@ public:
 		return mIsTranscendent;
 	}
 
-	virtual void update(float dt) = 0;
+	virtual void update(float dt);
 
 	//The basic states don't even use this
-	virtual void draw(sf::RenderWindow& window)
-	{
-		for (auto& a : mDrawables)
-		{
-			a->draw(window);
-		}
-	}
+	virtual void draw(sf::RenderWindow& window);
 	virtual void handleEvent(sf::Event& event) = 0;
 
-	void addDrawable(RenderScript* renderScript)
-	{
-		mDrawables.push_back(renderScript);
-	}
+	void addDrawable(RenderScript* renderScript);
 
-	void removeDrawable(RenderScript* renderScript)
-	{
-		auto iter = std::find(mDrawables.begin(), mDrawables.end(), renderScript);
-		mDrawables.erase(iter);
-	}
+	void removeDrawable(RenderScript* renderScript);
 
 protected:
 	bool mIsTranslucent;
@@ -69,6 +59,27 @@ protected:
 
 	//The basic states dont even use this
 	std::vector<RenderScript*> mDrawables;
+	std::vector<Entity*> mEntities;
+};
+
+
+class PhysicsWorld : public State
+{
+public:
+	PhysicsWorld(StateStack* stateStack);
+	void addSquare();
+	void addGround();
+	void handleEvent(sf::Event& event) override
+	{
+
+	}
+	void update(float dt) override
+	{
+		world.Step(dt, 8, 3);
+		State::update(dt);
+	}
+private:
+	b2World world;
 };
 
 class Segment

@@ -2,10 +2,12 @@
 
 #include <unordered_map>
 #include "Subcriber.h";
-#include "States.h";
 #include <SFML/Graphics.hpp>;
+#include <box2d.h>;
+#include "Utils.h";
 
 class EntityScript;
+class State;
 
 class Entity
 {
@@ -14,9 +16,9 @@ public:
 	{
 		for (auto& script : mScripts)
 		{
-			if (dynamic_cast<T>(script) != nullptr)
+			if (dynamic_cast<T*>(script) != nullptr)
 			{
-				return static_cast<T>(script);
+				return static_cast<T*>(script);
 			}
 		}
 		return nullptr;
@@ -39,17 +41,16 @@ public:
 	{
 		None,
 		MouseHandler,
-		Rectangle
+		Rectangle,
+		BoxCollider
 	};
 	EntityScript(Type type, Entity* entity)
 	{
 		mEntityScriptType = type;
 		mEntity = entity;
-		onCreate();
 	}
 	virtual ~EntityScript()
 	{
-		onDestroy();
 	}
 	virtual void update(float dt) = 0;
 protected:
@@ -65,6 +66,9 @@ public:
 	using EntityScript::EntityScript;
 	virtual void draw(sf::RenderWindow& window) = 0;
 	virtual void changePosition(const sf::Vector2f& position) = 0;
+	virtual void changeRotation(float rotation) = 0;
+	virtual sf::Vector2f getSize() const = 0;
+	virtual sf::Vector2f getPosition() const = 0;
 };
 
 class RectangleRenderScript : public RenderScript
@@ -77,7 +81,22 @@ public:
 	void notify(const ObserverMessage& msg) override;
 	void draw(sf::RenderWindow& window) override;
 	void changePosition(const sf::Vector2f& position) override;
+	void changeRotation(float rotation) override;
+	sf::Vector2f getPosition() const override;
+	sf::Vector2f getSize() const override;
 private:
 	sf::RectangleShape mShape;
 	State* mState;
+};
+
+class BoxCollider : public EntityScript
+{
+public:
+	BoxCollider(b2World* world, RenderScript* object, float density, float friction, Entity* entity, bool isStatic = false);
+	void update(float dt) override;
+	void onCreate() override;
+	void onDestroy() override;
+	void notify(const ObserverMessage& msg) override;
+private:
+	b2Body* Body;
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-float lerp(float a, float b, float f)
-{
-	return (a * (1.0 - f)) + (b * f);
-}
+constexpr float SCALE = 30.f;
+
+float lerp(float a, float b, float f);
