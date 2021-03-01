@@ -1,5 +1,7 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>;
+#include <algorithm>;
+#include "Entity.h";
 
 class StateStack;
 
@@ -38,12 +40,35 @@ public:
 	}
 
 	virtual void update(float dt) = 0;
-	virtual void draw(sf::RenderWindow& window) = 0;
+
+	//The basic states don't even use this
+	virtual void draw(sf::RenderWindow& window)
+	{
+		for (auto& a : mDrawables)
+		{
+			a->draw(window);
+		}
+	}
 	virtual void handleEvent(sf::Event& event) = 0;
+
+	void addDrawable(RenderScript* renderScript)
+	{
+		mDrawables.push_back(renderScript);
+	}
+
+	void removeDrawable(RenderScript* renderScript)
+	{
+		auto iter = std::find(mDrawables.begin(), mDrawables.end(), renderScript);
+		mDrawables.erase(iter);
+	}
+
 protected:
 	bool mIsTranslucent;
 	bool mIsTranscendent;
 	StateStack* mStateStack;
+
+	//The basic states dont even use this
+	std::vector<RenderScript*> mDrawables;
 };
 
 class Segment

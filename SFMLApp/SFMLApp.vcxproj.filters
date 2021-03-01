@@ -24,6 +24,12 @@
     <ClCompile Include="StateStack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Subscriber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
@@ -33,6 +39,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="StateStack.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Subcriber.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
