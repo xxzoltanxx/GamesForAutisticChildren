@@ -23,10 +23,13 @@ public:
 		}
 		return nullptr;
 	}
+
 	void addComponent(EntityScript* script)
 	{
 		mScripts.push_back(script);
 	}
+
+	void removeComponent(EntityScript* script);
 	void update(float dt);
 private:
 	std::vector<EntityScript*> mScripts;
@@ -34,24 +37,18 @@ private:
 
 //Unity-like abomination below
 
-class EntityScript : Observer
+class EntityScript : public Observer
 {
 public:
-	enum Type
+	enum class Type
 	{
 		None,
 		MouseHandler,
 		Rectangle,
 		BoxCollider
 	};
-	EntityScript(Type type, Entity* entity)
-	{
-		mEntityScriptType = type;
-		mEntity = entity;
-	}
-	virtual ~EntityScript()
-	{
-	}
+	EntityScript(Type type, Entity* entity);
+	virtual ~EntityScript() {}
 	virtual void update(float dt) = 0;
 protected:
 	virtual void onCreate() = 0;
@@ -67,14 +64,21 @@ public:
 	virtual void draw(sf::RenderWindow& window) = 0;
 	virtual void changePosition(const sf::Vector2f& position) = 0;
 	virtual void changeRotation(float rotation) = 0;
+	virtual bool containsPoint(const sf::Vector2f& point) = 0;
 	virtual sf::Vector2f getSize() const = 0;
 	virtual sf::Vector2f getPosition() const = 0;
+	virtual float getRotation() const = 0;
 };
 
 class RectangleRenderScript : public RenderScript
 {
 public:
 	RectangleRenderScript(sf::Vector2f size, sf::Color color, const sf::Vector2f& position, Entity* entity, State* state);
+	virtual ~RectangleRenderScript()
+	{
+		onDestroy();
+	}
+	bool containsPoint(const sf::Vector2f& point) override;
 	void update(float dt) override;
 	void onCreate() override;
 	void onDestroy() override;
@@ -82,6 +86,7 @@ public:
 	void draw(sf::RenderWindow& window) override;
 	void changePosition(const sf::Vector2f& position) override;
 	void changeRotation(float rotation) override;
+	float getRotation() const override;
 	sf::Vector2f getPosition() const override;
 	sf::Vector2f getSize() const override;
 private:
@@ -93,10 +98,30 @@ class BoxCollider : public EntityScript
 {
 public:
 	BoxCollider(b2World* world, RenderScript* object, float density, float friction, Entity* entity, bool isStatic = false);
+	virtual ~BoxCollider()
+	{
+		onDestroy();
+	}
+	void update(float dt) override;
+	void onCreate() override;
+	void onDestroy() override;
+	void notify(const ObserverMessage& msg) override { }
+	void changePosition(const sf::Vector2f& newPos);
+private:
+	b2Body* Body;
+	b2World* mWorld;
+};
+
+class MouseMoverScript : public EntityScript
+{
+public:
+	MouseMoverScript(Entity* entity, b2World* world);
+	virtual ~MouseMoverScript();
 	void update(float dt) override;
 	void onCreate() override;
 	void onDestroy() override;
 	void notify(const ObserverMessage& msg) override;
 private:
-	b2Body* Body;
+	bool selected = false;
+	b2World* mWorld;
 };

@@ -3,33 +3,46 @@
 #include <unordered_map>
 #include <algorithm>
 
+enum class ObserverMessageType
+{
+	MouseMoved,
+	MouseClicked,
+	MouseReleased,
+};
+
 struct ObserverMessage
 {
+	ObserverMessageType mType;
 	union
 	{
 		int mInt;
 		bool mBool;
-		float mFloat;
+		struct TwoFloats
+		{
+			float mFloat1;
+			float mFloat2;
+		};
+
+		TwoFloats twoFloats;
 	};
 };
+
 
 class Observer
 {
 public:
+	virtual ~Observer() {}
 	virtual void notify(const ObserverMessage& message) = 0;
 };
+
+
 
 class Subscription
 {
 public:
-	enum Type
-	{
-		MouseMoved,
-	};
-
-	void sendMessage(Type type, ObserverMessage message);
-	void addSubscriber(Observer* obs, Type type);
-	void removeSubscriber(Observer* obs, Type type);
+	void sendMessage(ObserverMessageType type, ObserverMessage message);
+	void addSubscriber(Observer* obs, ObserverMessageType type);
+	void removeSubscriber(Observer* obs, ObserverMessageType type);
 
 	static Subscription* get()
 	{
@@ -43,5 +56,6 @@ private:
 
 	static Subscription* instance;
 
-	std::unordered_map<Type, std::vector<Observer*>> mSubscribers;
+	std::unordered_map<ObserverMessageType, std::vector<Observer*>> mSubscribers;
 };
+

@@ -2,7 +2,7 @@
 
 Subscription* Subscription::instance = nullptr;
 
-void Subscription::sendMessage(Type type, ObserverMessage message)
+void Subscription::sendMessage(ObserverMessageType type, ObserverMessage message)
 {
 	for (auto& a : mSubscribers[type])
 	{
@@ -10,7 +10,7 @@ void Subscription::sendMessage(Type type, ObserverMessage message)
 	}
 }
 
-void Subscription::addSubscriber(Observer* obs, Type type)
+void Subscription::addSubscriber(Observer* obs, ObserverMessageType type)
 {
 	if (mSubscribers.find(type) == mSubscribers.end())
 	{
@@ -19,7 +19,7 @@ void Subscription::addSubscriber(Observer* obs, Type type)
 	mSubscribers[type].push_back(obs);
 }
 
-void Subscription::removeSubscriber(Observer* obs, Type type)
+void Subscription::removeSubscriber(Observer* obs, ObserverMessageType type)
 {
 	auto iter = std::find(mSubscribers[type].begin(), mSubscribers[type].end(), obs);
 	mSubscribers[type].erase(iter);

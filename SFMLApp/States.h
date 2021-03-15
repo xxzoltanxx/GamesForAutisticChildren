@@ -69,10 +69,7 @@ public:
 	PhysicsWorld(StateStack* stateStack);
 	void addSquare();
 	void addGround();
-	void handleEvent(sf::Event& event) override
-	{
-
-	}
+	void handleEvent(sf::Event& event) override;
 	void update(float dt) override
 	{
 		world.Step(dt, 8, 3);

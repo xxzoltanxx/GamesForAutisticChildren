@@ -1,5 +1,6 @@
 #include "States.h"
 #include "StateStack.h"
+#include "Subcriber.h"
 #include "Utils.h"
 #include "Entity.h"
 
@@ -523,22 +524,22 @@ PhysicsWorld::PhysicsWorld(StateStack* stateStack) :
 	State(false, false, stateStack),
 	world(b2Vec2(0, 9.81))
 {
-	for (int i = 0; i < 30; ++i)
+	addGround();
+	for (int i = 0; i < 10; ++i)
 	{
 		addSquare();
 	}
-	addGround();
 }
 
 void PhysicsWorld::addSquare()
 {
 	Entity* newEntity = new Entity();
-	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(rand() % 50 + 10, rand() % 50 + 10), sf::Color::Red, sf::Vector2f(rand() % 600, rand() % 300), newEntity, this);
-	rect->onCreate();
+	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(50, 50), sf::Color(rand() % 255, rand() % 255, rand() % 255, 255), sf::Vector2f(rand() % 300 + 200, rand() % 300), newEntity, this);
 	BoxCollider* collider = new BoxCollider(&world, rect, 1.0f, 2.0f, newEntity, false);
-	collider->onCreate();
+	MouseMoverScript* mover = new MouseMoverScript(newEntity, &world);
 	newEntity->addComponent(rect);
 	newEntity->addComponent(collider);
+	newEntity->addComponent(mover);
 	mEntities.push_back(newEntity);
 }
 
@@ -548,8 +549,42 @@ void PhysicsWorld::addGround()
 	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(640, 20), sf::Color::Blue, sf::Vector2f(320, 470), newEntity, this);
 	rect->onCreate();
 	BoxCollider* collider = new BoxCollider(&world, rect,0.0f, 2.0f, newEntity, true);
-	collider->onCreate();
 	newEntity->addComponent(rect);
 	newEntity->addComponent(collider);
 	mEntities.push_back(newEntity);
+}
+
+void PhysicsWorld::handleEvent(sf::Event& event)
+{
+	if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (event.mouseButton.button == sf::Mouse::Button::Left)
+		{
+			ObserverMessage message;
+			message.mType = ObserverMessageType::MouseClicked;
+			sf::Vector2i mousePos = sf::Mouse::getPosition(*(mStateStack->mWindow));
+			message.twoFloats.mFloat1 = mousePos.x;
+			message.twoFloats.mFloat2 = mousePos.y;
+			Subscription::get()->sendMessage(ObserverMessageType::MouseClicked, message);
+		}
+	}
+
+	if (event.type == sf::Event::MouseButtonReleased)
+	{
+		if (event.mouseButton.button == sf::Mouse::Button::Left)
+		{
+			ObserverMessage message;
+			message.mType = ObserverMessageType::MouseReleased;
+			Subscription::get()->sendMessage(ObserverMessageType::MouseClicked, message);
+		}
+	}
+
+	sf::Vector2i mousePos = sf::Mouse::getPosition(*(mStateStack->mWindow));
+	ObserverMessage msg;
+	msg.mType = ObserverMessageType::MouseMoved;
+	msg.twoFloats.mFloat1 = mousePos.x;
+	msg.twoFloats.mFloat2 = mousePos.y;
+	Subscription::get()->sendMessage(ObserverMessageType::MouseMoved, msg);
+
+
 }
