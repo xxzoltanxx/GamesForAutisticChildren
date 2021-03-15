@@ -525,37 +525,67 @@ PhysicsWorld::PhysicsWorld(StateStack* stateStack) :
 	world(b2Vec2(0, 9.81))
 {
 	addGround();
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 9; ++i)
 	{
-		addSquare();
+		addSquare(i);
 	}
 }
 
-void PhysicsWorld::addSquare()
+void PhysicsWorld::addSquare(int number)
 {
 	Entity* newEntity = new Entity();
-	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(50, 50), sf::Color(rand() % 255, rand() % 255, rand() % 255, 255), sf::Vector2f(rand() % 300 + 200, rand() % 300), newEntity, this);
+	int r = rand() % 255;
+	int g = rand() % 255;
+	int b = rand() % 255;
+	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(50, 50), sf::Color(r,g,b, 255), sf::Vector2f(rand() % 300 + 200, rand() % 300), newEntity, this);
 	BoxCollider* collider = new BoxCollider(&world, rect, 1.0f, 2.0f, newEntity, false);
 	MouseMoverScript* mover = new MouseMoverScript(newEntity, &world);
+	Finishable* finishable = new Finishable(newEntity, number);
 	newEntity->addComponent(rect);
 	newEntity->addComponent(collider);
 	newEntity->addComponent(mover);
+	newEntity->addComponent(finishable);
 	mEntities.push_back(newEntity);
+
+	Entity* toMakeEntity = new Entity();
+	RectangleRenderScript* rectToMake = new RectangleRenderScript(sf::Vector2f(50, 50), sf::Color(r,g,b, 130), sf::Vector2f(600, 430 - 50 * number), toMakeEntity, this);
+	Fadeable* fadeable = new Fadeable(toMakeEntity, number);
+	toMakeEntity->addComponent(rectToMake);
+	toMakeEntity->addComponent(fadeable);
+	mEntities.push_back(toMakeEntity);
 }
 
 void PhysicsWorld::addGround()
 {
 	Entity* newEntity = new Entity();
 	RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(640, 20), sf::Color::Blue, sf::Vector2f(320, 470), newEntity, this);
-	rect->onCreate();
 	BoxCollider* collider = new BoxCollider(&world, rect,0.0f, 2.0f, newEntity, true);
 	newEntity->addComponent(rect);
 	newEntity->addComponent(collider);
 	mEntities.push_back(newEntity);
+
+	Entity* wall1 = new Entity();
+	RectangleRenderScript* wallRect = new RectangleRenderScript(sf::Vector2f(100, 480), sf::Color::Blue, sf::Vector2f(-40, 240), wall1, this);
+	BoxCollider* wallCollider = new BoxCollider(&world, wallRect, 0.0f, 2.0f, wall1, true);
+	wall1->addComponent(wallRect);
+	wall1->addComponent(wallCollider);
+
+	Entity* wall2 = new Entity();
+	RectangleRenderScript* wallRect2 = new RectangleRenderScript(sf::Vector2f(100, 480), sf::Color::Blue, sf::Vector2f(680, 240), wall2, this);
+	BoxCollider* wallCollider2 = new BoxCollider(&world, wallRect2, 0.0f, 2.0f, wall2, true);
+	wall2->addComponent(wallRect);
+	wall2->addComponent(wallCollider);
+
+	mEntities.push_back(wall1);
+	mEntities.push_back(wall2);
 }
 
 void PhysicsWorld::handleEvent(sf::Event& event)
 {
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+	{
+		mStateStack->popState();
+	}
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
 		if (event.mouseButton.button == sf::Mouse::Button::Left)

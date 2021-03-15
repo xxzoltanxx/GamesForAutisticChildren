@@ -74,6 +74,11 @@ void RectangleRenderScript::onDestroy()
 	mState->removeDrawable(this);
 }
 
+void RectangleRenderScript::changeColor(const sf::Color& col)
+{
+	mShape.setFillColor(col);
+}
+
 void RectangleRenderScript::notify(const ObserverMessage& msg)
 {
 
@@ -87,6 +92,11 @@ void RectangleRenderScript::draw(sf::RenderWindow& window)
 bool RectangleRenderScript::containsPoint(const sf::Vector2f& point)
 {
 	return mShape.getGlobalBounds().contains(point);
+}
+
+sf::Color RectangleRenderScript::getColor() const
+{
+	return mShape.getFillColor();
 }
 
 BoxCollider::BoxCollider(b2World* world, RenderScript* object, float density, float friction, Entity* entity, bool isStatic)
@@ -202,5 +212,89 @@ void MouseMoverScript::notify(const ObserverMessage& msg)
 			EntityScript* collider = new BoxCollider(mWorld,(RenderScript*) mEntity->getComponent<RenderScript>(), 2.0f, 2.0f, mEntity, false);
 			mEntity->addComponent(collider);
 		}
+	}
+}
+
+Fadeable::Fadeable(Entity* ent, int target) :
+	EntityScript(EntityScript::Type::None, ent),
+	mTarget(target)
+{
+	onCreate();
+}
+
+void Fadeable::update(float dt)
+{
+	interpolation += dt;
+	if (interpolation < 1.0f)
+	{
+		sf::Color oldColor = ((RenderScript*)mEntity->getComponent<RenderScript>())->getColor();
+		if (!targetReached)
+		{
+			oldColor.a = 255 - 125 * interpolation;
+		}
+		else
+		{
+			oldColor.a = 123 + 122 * interpolation;
+		}
+		((RenderScript*)mEntity->getComponent<RenderScript>())->changeColor(oldColor);
+	}
+}
+
+void Fadeable::notify(const ObserverMessage& msg)
+{
+	if (msg.mType == ObserverMessageType::OutOfPosition && msg.mInt == mTarget)
+	{
+		interpolation = 0.0f;
+		targetReached = false;
+	}
+	else if (msg.mType == ObserverMessageType::SetInPosition && msg.mInt == mTarget)
+	{
+		interpolation = 0.0f;
+		targetReached = true;
+	}
+}
+
+void Fadeable::onCreate()
+{
+	Subscription::get()->addSubscriber(this, ObserverMessageType::OutOfPosition);
+	Subscription::get()->addSubscriber(this, ObserverMessageType::SetInPosition);
+}
+
+void Fadeable::onDestroy()
+{
+	Subscription::get()->removeSubscriber(this, ObserverMessageType::OutOfPosition);
+	Subscription::get()->removeSubscriber(this, ObserverMessageType::SetInPosition);
+}
+
+Finishable::Finishable(Entity* ent, int position) : EntityScript(EntityScript::Type::None, ent), mPosition(position) { onCreate(); }
+
+void Finishable::update(float dt)
+{
+	RenderScript* renderable = (RenderScript*)mEntity->getComponent<RenderScript>();
+	if ((int)((480 - renderable->getPosition().y - 30) / 50) == mPosition)
+	{
+		mIsInPosition = true;
+		mDoneOutOfPositionStep = false;
+	}
+	else
+	{
+		mIsInPosition = false;
+		mDonePositionStep = false;
+		if (!mDoneOutOfPositionStep)
+		{
+			ObserverMessage msg;
+			msg.mInt = mPosition;
+			msg.mType = ObserverMessageType::OutOfPosition;
+			Subscription::get()->sendMessage(ObserverMessageType::OutOfPosition, msg);
+			mDoneOutOfPositionStep = true;
+		}
+	}
+	if (!mDonePositionStep && mIsInPosition)
+	{
+		ObserverMessage msg;
+		msg.mInt = mPosition;
+		msg.mType = ObserverMessageType::SetInPosition;
+		Subscription::get()->sendMessage(ObserverMessageType::SetInPosition, msg);
+		mDonePositionStep = true;
 	}
 }

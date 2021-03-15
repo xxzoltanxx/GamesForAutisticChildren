@@ -8,6 +8,8 @@ enum class ObserverMessageType
 	MouseMoved,
 	MouseClicked,
 	MouseReleased,
+	SetInPosition,
+	OutOfPosition
 };
 
 struct ObserverMessage

@@ -64,7 +64,9 @@ public:
 	virtual void draw(sf::RenderWindow& window) = 0;
 	virtual void changePosition(const sf::Vector2f& position) = 0;
 	virtual void changeRotation(float rotation) = 0;
+	virtual void changeColor(const sf::Color& col) = 0;
 	virtual bool containsPoint(const sf::Vector2f& point) = 0;
+	virtual sf::Color getColor() const = 0;
 	virtual sf::Vector2f getSize() const = 0;
 	virtual sf::Vector2f getPosition() const = 0;
 	virtual float getRotation() const = 0;
@@ -78,9 +80,11 @@ public:
 	{
 		onDestroy();
 	}
+	virtual void changeColor(const sf::Color& col);
 	bool containsPoint(const sf::Vector2f& point) override;
 	void update(float dt) override;
 	void onCreate() override;
+	sf::Color getColor() const override;
 	void onDestroy() override;
 	void notify(const ObserverMessage& msg) override;
 	void draw(sf::RenderWindow& window) override;
@@ -124,4 +128,42 @@ public:
 private:
 	bool selected = false;
 	b2World* mWorld;
+};
+
+class Fadeable : public EntityScript
+{
+public:
+	Fadeable(Entity* entity, int target);
+	virtual ~Fadeable()
+	{
+		onDestroy();
+	}
+	void update(float dt) override;
+	void onCreate() override;
+	void onDestroy() override;
+	void notify(const ObserverMessage& msg) override;
+private:
+	float interpolation = 0.0f;
+	int mTarget = -1;
+	bool targetReached = false;
+};
+
+class Finishable : public EntityScript
+{
+public:
+	Finishable(Entity* entity, int position);
+	virtual ~Finishable()
+	{
+		onDestroy();
+	}
+	void update(float dt) override;
+	void onCreate() override {};
+	void onDestroy() override {};
+	void notify(const ObserverMessage& msg) override {}
+private:
+	int mPosition;
+	bool mIsInPosition = false;
+	bool mDonePositionStep = false;
+	bool mDoneOutOfPositionStep = false;
+
 };

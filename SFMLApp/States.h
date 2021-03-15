@@ -67,7 +67,7 @@ class PhysicsWorld : public State
 {
 public:
 	PhysicsWorld(StateStack* stateStack);
-	void addSquare();
+	void addSquare(int number);
 	void addGround();
 	void handleEvent(sf::Event& event) override;
 	void update(float dt) override
@@ -76,7 +76,9 @@ public:
 		State::update(dt);
 	}
 private:
+	std::vector<Entity*> mGuiEntities;
 	b2World world;
+	sf::View toMakeView;
 };
 
 class Segment
