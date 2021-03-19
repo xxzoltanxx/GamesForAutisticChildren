@@ -14,7 +14,7 @@ private:
 };
 
 Game::Game()
-	: mWindow(sf::VideoMode(640, 480), "farba"), mStateStack(&mWindow)
+	: mWindow(sf::VideoMode(640, 480), "farba", sf::Style::Fullscreen), mStateStack(&mWindow)
 {
 	mStateStack.pushbackState(State::MainMenu);
 }

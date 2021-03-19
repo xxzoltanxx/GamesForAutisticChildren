@@ -73,6 +73,10 @@ void MainMenu::handleEvent(sf::Event& event)
 		{
 			mStateStack->pushbackState(State::GameState);
 		}
+		else if (event.key.code == sf::Keyboard::Escape)
+		{
+			mStateStack->popState();
+		}
 		else if (event.key.code == sf::Keyboard::Num2)
 		{
 			mStateStack->pushbackState(State::Gusjenica);
