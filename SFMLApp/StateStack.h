@@ -13,7 +13,8 @@ enum class Command
 	Pop,
 	PushGusjenica,
 	PushSnake,
-	PushPhysics
+	PushPhysics,
+	PushCircle
 };
 
 class StateStack

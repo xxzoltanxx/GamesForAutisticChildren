@@ -85,6 +85,10 @@ void MainMenu::handleEvent(sf::Event& event)
 		{
 			mStateStack->pushbackState(State::PhysicsGame);
 		}
+		else if (event.key.code == sf::Keyboard::Num5)
+		{
+			mStateStack->pushbackState(State::DrawCircle);
+		}
 	}
 }
 
@@ -617,4 +621,137 @@ void PhysicsWorld::handleEvent(sf::Event& event)
 	Subscription::get()->sendMessage(ObserverMessageType::MouseMoved, msg);
 
 
+}
+
+void CircleColoringState::handleEvent(sf::Event& event)
+{
+	if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (event.mouseButton.button == sf::Mouse::Button::Left)
+		{
+			ObserverMessage message;
+			message.mType = ObserverMessageType::MouseClicked;
+			sf::Vector2i mousePos = sf::Mouse::getPosition(*(mStateStack->mWindow));
+			message.twoFloats.mFloat1 = mousePos.x;
+			message.twoFloats.mFloat2 = mousePos.y;
+			Subscription::get()->sendMessage(ObserverMessageType::MouseClicked, message);
+		}
+	}
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+	{
+		mStateStack->popState();
+	}
+}
+
+CircleColoringState::CircleColoringState(StateStack* stateStack) :
+	State(false, false, stateStack)
+{
+	for (int i = 0; i < 5; ++i)
+	{
+		int r = rand() % 255;
+		int g = rand() % 255;
+		int b = rand() % 255;
+		sf::Color col(r, g, b, 255);
+		mCorrectColors.push_back(col);
+	}
+
+	Entity* toDraw = new Entity();
+	CircleRenderScript* circleRender = new CircleRenderScript(sf::Vector2f(120, 120), mCorrectColors[0], mCorrectColors[1], mCorrectColors[2], mCorrectColors[3], mCorrectColors[4], sf::Color::White, sf::Vector2f(150, 150), toDraw, this, false);
+	CircleDrawable* circleDrawable = new CircleDrawable(toDraw);
+	toDraw->addComponent(circleRender);
+	toDraw->addComponent(circleDrawable);
+	mEntities.push_back(toDraw);
+
+	Entity* finished = new Entity();
+	CircleRenderScript* finishedRender = new CircleRenderScript(sf::Vector2f(120, 120), mCorrectColors[0], mCorrectColors[1], mCorrectColors[2], mCorrectColors[3], mCorrectColors[4], sf::Color::White, sf::Vector2f(450, 150), toDraw, this, true);
+	finished->addComponent(finishedRender);
+	mEntities.push_back(finished);
+
+	upgame();
+}
+
+void CircleColoringState::upgame()
+{
+	for (auto& a : mColorRects)
+	{
+		delete a;
+	}
+	for (auto& a : mColorRects)
+	{
+		auto iter = std::find(mEntities.begin(), mEntities.end(), a);
+		mEntities.erase(iter);
+	}
+	mColorRects.clear();
+	++game;
+	if (game == 7)
+		return;
+	int index = rand() % game;
+	for (int i = 0; i < game; ++i)
+	{
+		if (i == index)
+		{
+			Entity* colorPicker = new Entity();
+			RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(75, 75), mCorrectColors[game - 2], sf::Vector2f(37.5 + i * 75, 385), colorPicker, this);
+			MouseClickScript* clickScript = new MouseClickScript(colorPicker, true, this);
+			colorPicker->addComponent(rect);
+			colorPicker->addComponent(clickScript);
+			mEntities.push_back(colorPicker);
+			mColorRects.push_back(colorPicker);
+		}
+		else
+		{
+			Entity* colorPicker = new Entity();
+			RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(75, 75), sf::Color(rand() % 255, rand() % 255, rand() % 255, 255), sf::Vector2f(37.5 + i * 75, 385), colorPicker, this);
+			MouseClickScript* clickScript = new MouseClickScript(colorPicker, false, this);
+			colorPicker->addComponent(rect);
+			colorPicker->addComponent(clickScript);
+			mEntities.push_back(colorPicker);
+			mColorRects.push_back(colorPicker);
+		}
+
+	}
+}
+
+void CircleColoringState::downgame()
+{
+	for (auto& a : mColorRects)
+	{
+		delete a;
+	}
+	for (auto& a : mColorRects)
+	{
+		auto iter = std::find(mEntities.begin(), mEntities.end(), a);
+		mEntities.erase(iter);
+	}
+	mColorRects.clear();
+	--game;
+	if (game == 1)
+	{
+		return;
+	}
+	int index = rand() % game;
+	for (int i = 0; i < game; ++i)
+	{
+		if (i == index)
+		{
+			Entity* colorPicker = new Entity();
+			RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(75, 75), mCorrectColors[game - 2], sf::Vector2f(37.5 + i * 75, 385), colorPicker, this);
+			MouseClickScript* clickScript = new MouseClickScript(colorPicker, true, this);
+			colorPicker->addComponent(rect);
+			colorPicker->addComponent(clickScript);
+			mEntities.push_back(colorPicker);
+			mColorRects.push_back(colorPicker);
+		}
+		else
+		{
+			Entity* colorPicker = new Entity();
+			RectangleRenderScript* rect = new RectangleRenderScript(sf::Vector2f(75, 75), sf::Color(rand() % 255, rand() % 255, rand() % 255, 255), sf::Vector2f(37.5 + i * 75, 385), colorPicker, this);
+			MouseClickScript* clickScript = new MouseClickScript(colorPicker, false, this);
+			colorPicker->addComponent(rect);
+			colorPicker->addComponent(clickScript);
+			mEntities.push_back(colorPicker);
+			mColorRects.push_back(colorPicker);
+		}
+
+	}
 }

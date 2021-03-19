@@ -18,6 +18,10 @@ void StateStack::pushbackState(State::States state)
 	{
 		mCommand = Command::PushPhysics;
 	}
+	else if (state == State::DrawCircle)
+	{
+		mCommand = Command::PushCircle;
+	}
 	else
 	{
 		mCommand = Command::PushGusjenica;
@@ -37,6 +41,7 @@ StateStack::StateStack(sf::RenderWindow* window)
 	registerState<GusjenicaState>(State::Gusjenica);
 	registerState<SnakeState>(State::SnakeState);
 	registerState<PhysicsWorld>(State::PhysicsGame);
+	registerState<CircleColoringState>(State::DrawCircle);
 }
 
 void StateStack::render(sf::RenderWindow& window)
@@ -78,6 +83,10 @@ void StateStack::update(float dt)
 	else if (mCommand == Command::PushSnake)
 	{
 		mStates.push_back(std::move(mStateFactory[State::SnakeState](this)));
+	}
+	else if (mCommand == Command::PushCircle)
+	{
+		mStates.push_back(std::move(mStateFactory[State::DrawCircle](this)));
 	}
 	else if (mCommand == Command::Pop)
 	{

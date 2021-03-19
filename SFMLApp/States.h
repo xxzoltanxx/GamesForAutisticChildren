@@ -29,7 +29,8 @@ public:
 		Gusjenica,
 		SnakeState,
 		PhysicsGame,
-		Game
+		Game,
+		DrawCircle
 	};
 
 	bool isTranslucent() const
@@ -76,9 +77,42 @@ public:
 		State::update(dt);
 	}
 private:
-	std::vector<Entity*> mGuiEntities;
 	b2World world;
-	sf::View toMakeView;
+};
+
+class CircleColoringState : public State
+{
+public:
+	CircleColoringState(StateStack* stateStack);
+
+	void upgame();
+	void downgame();
+	void update(float dt) override
+	{
+		State::update(dt);
+		if (upgamePostFrameVar)
+		{
+			upgamePostFrameVar = false;
+			upgame();
+		}
+		if (downgamePostFrameVar)
+		{
+			downgamePostFrameVar = false;
+			downgame();
+		}
+	}
+	void upgamePostFrame() { upgamePostFrameVar = true; }
+	void downgamePostFrame() { downgamePostFrameVar = true; }
+
+	void handleEvent(sf::Event& event) override;
+private:
+	std::vector<sf::Color> mCorrectColors;
+	std::vector<Entity*> mColorRects;
+
+	bool upgamePostFrameVar = false;
+	bool downgamePostFrameVar = false;
+
+	int game = 1;
 };
 
 class Segment

@@ -8,10 +8,12 @@
 
 class EntityScript;
 class State;
+class CircleColoringState;
 
 class Entity
 {
 public:
+	~Entity();
 	template <typename T> EntityScript* getComponent()
 	{
 		for (auto& script : mScripts)
@@ -80,7 +82,7 @@ public:
 	{
 		onDestroy();
 	}
-	virtual void changeColor(const sf::Color& col);
+	void changeColor(const sf::Color& col) override;
 	bool containsPoint(const sf::Vector2f& point) override;
 	void update(float dt) override;
 	void onCreate() override;
@@ -96,6 +98,36 @@ public:
 private:
 	sf::RectangleShape mShape;
 	State* mState;
+};
+
+class CircleRenderScript : public RenderScript
+{
+public:
+	CircleRenderScript(sf::Vector2f size, sf::Color col1, sf::Color col2, sf::Color col3, sf::Color col4, sf::Color col5, sf::Color defaultColor, const sf::Vector2f& position, Entity* entity, State* state, bool finished = false);
+	virtual ~CircleRenderScript()
+	{
+		onDestroy();
+	}
+	void changeColor(const sf::Color& col) override;
+	bool containsPoint(const sf::Vector2f& point) override;
+	void update(float dt) override;
+	void onCreate() override;
+	sf::Color getColor() const override;
+	void onDestroy() override;
+	void notify(const ObserverMessage& msg) override;
+	void draw(sf::RenderWindow& window) override;
+	void changePosition(const sf::Vector2f& position) override;
+	void changeRotation(float rotation) override;
+	float getRotation() const override;
+	sf::Vector2f getPosition() const override;
+	sf::Vector2f getSize() const override;
+
+	void setInterpolation(float interpolation);
+	void setNumber(int number);
+private:
+	sf::CircleShape mShape;
+	State* mState;
+	sf::Shader mShader;
 };
 
 class BoxCollider : public EntityScript
@@ -128,6 +160,34 @@ public:
 private:
 	bool selected = false;
 	b2World* mWorld;
+};
+
+class MouseClickScript : public EntityScript
+{
+public:
+	MouseClickScript(Entity* entity, bool isCorrectColor, CircleColoringState* state);
+	virtual ~MouseClickScript();
+	void update(float dt) override;
+	void onCreate() override;
+	void onDestroy() override;
+	void notify(const ObserverMessage& msg) override;
+private:
+	bool mIsCorrectColor;
+	CircleColoringState* mState;
+};
+
+class CircleDrawable : public EntityScript
+{
+public:
+	CircleDrawable(Entity* entity);
+	virtual ~CircleDrawable();
+	void update(float dt) override;
+	void onCreate() override;
+	void onDestroy() override;
+	void notify(const ObserverMessage& msg) override;
+private:
+	float interpolation = 0.0f;
+	int currentColor = 0;
 };
 
 class Fadeable : public EntityScript

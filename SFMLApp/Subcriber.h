@@ -9,7 +9,8 @@ enum class ObserverMessageType
 	MouseClicked,
 	MouseReleased,
 	SetInPosition,
-	OutOfPosition
+	OutOfPosition,
+	ColorPicked
 };
 
 struct ObserverMessage
